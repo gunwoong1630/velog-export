@@ -12,6 +12,7 @@ import com.velogexport.velogexport.domain.body.response.posts.Post;
 import com.velogexport.velogexport.domain.body.response.posts.PostsResponseBody;
 import com.velogexport.velogexport.domain.body.response.user.UserResponseBody;
 import com.velogexport.velogexport.exception.GraphQLException;
+import com.velogexport.velogexport.utils.MDUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -23,6 +24,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -50,7 +54,40 @@ public class GraphQLClientServiceImpl implements GraphQLClientService {
                     String path = entry.getValue().get(0).getSeriesName() + "/";
                     zipOut.putNextEntry(new ZipEntry(path));
                     zipOut.closeEntry();
+                    Map<String, String> urlToLocalPath = new LinkedHashMap<>();
+
                     for (PostMD postMD : entry.getValue()) {
+                        List<String> imageUrls = MDUtils.extractImageUrls(postMD.getContent());
+                        if (!imageUrls.isEmpty()) {
+                            for (int i = 0; i < imageUrls.size(); i++) {
+                                try (InputStream in = new URL(imageUrls.get(i)).openStream()) {
+                                    String localPath = path + "images/" + postMD.getTitle() + i + MDUtils.getImageFileExtension(imageUrls.get(i));
+
+                                    zipOut.putNextEntry(new ZipEntry(localPath));
+
+                                    byte[] buffer = new byte[1024];
+                                    int len;
+                                    while ((len = in.read(buffer)) > 0) {
+                                        zipOut.write(buffer, 0, len);
+                                    }
+                                    zipOut.closeEntry();
+
+                                    urlToLocalPath.put(imageUrls.get(i), "<images/%s>".formatted(postMD.getTitle() + i + MDUtils.getImageFileExtension(imageUrls.get(i))));
+                                } catch (IOException e) {
+                                    log.info("gwj " + postMD.getTitle());
+                                    log.info("gwj : " + postMD.getTitle() + i + MDUtils.getImageFileExtension(imageUrls.get(i)));
+//                                    throw new NotImageUrlException();
+                                }
+                            }
+                            String updatedMarkdown = postMD.getContent();
+                            for (Map.Entry<String, String> urlEntry : urlToLocalPath.entrySet()) {
+                                updatedMarkdown = updatedMarkdown.replace(urlEntry.getKey(), urlEntry.getValue());
+                            }
+                            zipOut.putNextEntry(new ZipEntry(path + postMD.getTitle() + ".md"));
+                            zipOut.write(updatedMarkdown.getBytes(StandardCharsets.UTF_8));
+                            zipOut.closeEntry();
+                            continue;
+                        }
                         zipOut.putNextEntry(new ZipEntry(path + postMD.getTitle() + ".md"));
                         zipOut.write(postMD.writeMD().getBytes(StandardCharsets.UTF_8));
                         zipOut.closeEntry();
