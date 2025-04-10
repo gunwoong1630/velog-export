@@ -3,6 +3,7 @@ package com.velogexport.velogexport.service;
 import com.velogexport.velogexport.config.VelogProperties;
 import com.velogexport.velogexport.domain.GraphQLQuery;
 import com.velogexport.velogexport.domain.KeyName;
+import com.velogexport.velogexport.domain.VelogDetail;
 import com.velogexport.velogexport.domain.body.request.ReadPostBody;
 import com.velogexport.velogexport.domain.body.request.ReadPostsBody;
 import com.velogexport.velogexport.domain.body.request.ReadUserBody;
@@ -41,12 +42,8 @@ public class GraphQLClientServiceImpl implements GraphQLClientService {
 
 
     @Override
-    public StreamingResponseBody downloadAllVelogPost(String username) {
-        if (!existVelogId(username)) {
-            return null;
-        }
-
-        Map<String, List<PostMD>> mdFiles = searchMdFiles(username);
+    public StreamingResponseBody downloadAllVelogPost(VelogDetail velogDetail) {
+        Map<String, List<PostMD>> mdFiles = searchMdFiles(velogDetail.getId());
 
         StreamingResponseBody responseBody = outputStream -> {
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
@@ -57,6 +54,12 @@ public class GraphQLClientServiceImpl implements GraphQLClientService {
                     Map<String, String> urlToLocalPath = new LinkedHashMap<>();
 
                     for (PostMD postMD : entry.getValue()) {
+                        if (!velogDetail.isReplaceImgUrl()) {
+                            zipOut.putNextEntry(new ZipEntry(path + postMD.getTitle() + ".md"));
+                            zipOut.write(postMD.writeMD().getBytes(StandardCharsets.UTF_8));
+                            zipOut.closeEntry();
+                            continue;
+                        }
                         List<String> imageUrls = MDUtils.extractImageUrls(postMD.getContent());
                         if (!imageUrls.isEmpty()) {
                             for (int i = 0; i < imageUrls.size(); i++) {
@@ -79,17 +82,13 @@ public class GraphQLClientServiceImpl implements GraphQLClientService {
 //                                    throw new NotImageUrlException();
                                 }
                             }
-                            String updatedMarkdown = postMD.getContent();
-                            for (Map.Entry<String, String> urlEntry : urlToLocalPath.entrySet()) {
-                                updatedMarkdown = updatedMarkdown.replace(urlEntry.getKey(), urlEntry.getValue());
-                            }
-                            zipOut.putNextEntry(new ZipEntry(path + postMD.getTitle() + ".md"));
-                            zipOut.write(updatedMarkdown.getBytes(StandardCharsets.UTF_8));
-                            zipOut.closeEntry();
-                            continue;
+                        }
+                        String updatedMarkdown = postMD.getContent();
+                        for (Map.Entry<String, String> urlEntry : urlToLocalPath.entrySet()) {
+                            updatedMarkdown = updatedMarkdown.replace(urlEntry.getKey(), urlEntry.getValue());
                         }
                         zipOut.putNextEntry(new ZipEntry(path + postMD.getTitle() + ".md"));
-                        zipOut.write(postMD.writeMD().getBytes(StandardCharsets.UTF_8));
+                        zipOut.write(updatedMarkdown.getBytes(StandardCharsets.UTF_8));
                         zipOut.closeEntry();
                     }
                 }

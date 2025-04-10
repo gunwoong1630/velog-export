@@ -1,5 +1,6 @@
 package com.velogexport.velogexport.service;
 
+import com.velogexport.velogexport.domain.VelogDetail;
 import com.velogexport.velogexport.domain.body.response.PostMD;
 import com.velogexport.velogexport.domain.body.response.post.PostResponseBody;
 import com.velogexport.velogexport.domain.body.response.posts.PostsResponseBody;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface GraphQLClientService {
-    StreamingResponseBody downloadAllVelogPost(String username);
+    StreamingResponseBody downloadAllVelogPost(VelogDetail velogDetail);
 
     boolean existVelogId(String username);
 

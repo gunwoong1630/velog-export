@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+    </style>
+    <title>Velog-export</title>
+</head>
+<body class="bg-gray-800 h-full">
+    <div class="flex flex-col justify-center items-center ">
+        <img src="../static/images/velog-export-logo.png" class="w-1/2 h-auto mx-auto py-8">
+        <form action="/download" method="post" th:object="${velogDetail}">
+            <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
+<!--                <legend class="fieldset-legend">Velog 정보</legend>-->
+                <label class="fieldset-label">Velog id</label>
+                <input type="text" class="input" name="velogId" placeholder="" th:field="*{id}"/>
+                <p class="fieldset-label"> https://velog.io/@홍길동/posts => 홍길동 입력 </p>
+                <label class="fieldset-label">
+                    <input type="checkbox" checked="checked" class="checkbox" th:field="*{isReplaceImgUrl}" />
+                    replace velog image to local image
+                </label>
+<!--                <p class="fieldset-label">You can edit page title later on from settings</p>-->
+                <button class="btn btn-neutral mt-4">전체 Velog 글 다운르드</button>
+            </fieldset>
+        </form>
+    </div>
+</body>
+</html>
