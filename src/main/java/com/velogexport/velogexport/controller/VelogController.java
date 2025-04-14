@@ -26,7 +26,7 @@ public class VelogController {
         return "index";
     }
 
-    @PostMapping("/download")
+    @PostMapping("/check")
     public String downloadVelogPosts(@ModelAttribute VelogDetail velogDetail, Model model) {
         if (!graphQLClientService.existVelogId(velogDetail.getId())) {
             model.addAttribute("errorMessage", "잘못된 Velog id를 입력했습니다. 다시 입력해주세요. ");
@@ -37,10 +37,11 @@ public class VelogController {
             model.addAttribute("errorMessage", "잘못된 접근입니다. 다시 입력해주세요. ");
             return "index";
         }
-        return "forward:/download/stream";
+        model.addAttribute("velogDetail", velogDetail);
+        return "loading";
     }
 
-    @PostMapping("/download/stream")
+    @PostMapping("/download")
     public ResponseEntity<StreamingResponseBody> streamDownload(@ModelAttribute VelogDetail velogDetail) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"%s.zip\"".formatted(velogDetail.getId()))

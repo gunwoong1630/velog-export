@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Velog-export</title>
+</head>
+<body class="bg-gray-800 h-full">
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md text-center">
+        <img src="/images/velog-export-logo.png" class="w-2/3 h-auto mx-auto mb-12">
+        <div class="w-full bg-base-200 border border-base-300 p-6 rounded-box">
+            <p>Velog 포스트를 압축중입니다. 잠시만 기다려주세요!</p>
+            <p>압축이 완료되면 자동으로 다운로드가 시작됩니다.</p>
+            <p>다운로드가 안된다면, <a id="downloadLink" class="link link-hover text-red-500">링크</a>를 클릭해주세요. </p>
+            <form id="download" action="/download" method="post" style="display: none">
+                <input type="hidden" name="id" th:value="${velogDetail.id}">
+                <input type="hidden" name="isImageGroup" th:value="${velogDetail.isImageGroup}">
+                <input type="hidden" name="imageUrlReplacePath" th:value="${velogDetail.imageUrlReplacePath}">
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    function startDownload() {
+        document.getElementById("download").submit();
+    }
+
+    window.onload = function () {
+        startDownload();
+    };
+
+    document.getElementById("downloadLink").addEventListener("click", function (event) {
+        event.preventDefault();
+        startDownload();
+    })
+</script>
+</body>
+</html>

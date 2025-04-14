@@ -12,7 +12,7 @@
 <div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-md text-center">
         <img src="/images/velog-export-logo.png" class="w-2/3 h-auto mx-auto mb-12">
-        <form action="/download" method="post" th:object="${velogDetail}">
+        <form action="/check" method="post" th:object="${velogDetail}">
             <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-6 rounded-box">
                 <label class="fieldset-label block text-left mb-1">Velog id</label>
                 <input type="text" class="input input-bordered w-full mb-2" name="velogId" placeholder="" th:field="*{id}" required/>
