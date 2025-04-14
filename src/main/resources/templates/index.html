@@ -2,29 +2,40 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css"/>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
     </style>
     <title>Velog-export</title>
 </head>
 <body class="bg-gray-800 h-full">
-    <div class="flex flex-col justify-center items-center ">
-        <img src="../static/images/velog-export-logo.png" class="w-1/2 h-auto mx-auto py-8">
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md text-center">
+        <img src="/images/velog-export-logo.png" class="w-2/3 h-auto mx-auto mb-12">
         <form action="/download" method="post" th:object="${velogDetail}">
-            <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
-<!--                <legend class="fieldset-legend">Velog 정보</legend>-->
-                <label class="fieldset-label">Velog id</label>
-                <input type="text" class="input" name="velogId" placeholder="" th:field="*{id}"/>
-                <p class="fieldset-label"> https://velog.io/@홍길동/posts => 홍길동 입력 </p>
-                <label class="fieldset-label">
-                    <input type="checkbox" checked="checked" class="checkbox" th:field="*{isReplaceImgUrl}" />
-                    replace velog image to local image
-                </label>
-<!--                <p class="fieldset-label">You can edit page title later on from settings</p>-->
-                <button class="btn btn-neutral mt-4">전체 Velog 글 다운르드</button>
+            <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-6 rounded-box">
+                <label class="fieldset-label block text-left mb-1">Velog id</label>
+                <input type="text" class="input input-bordered w-full mb-2" name="velogId" placeholder="" th:field="*{id}" required/>
+                <p class="text-left text-sm text-gray-400 mb-4">예: https://velog.io/@홍길동/posts → <strong>홍길동</strong> 입력</p>
+
+                <div x-data="{ show: false }">
+                    <label class="fieldset-label">
+                        <input type="checkbox" x-model="show" class="checkbox" th:field="*{isImageGroup}"/>
+                        포스팅의 이미지를 시리즈별로 저장, 아래의 경로를 추가하면 특정 경로로 시리즈별 저장
+                    </label>
+
+                    <input type="text" x-show="show" class="input input-bordered w-full mb-2" name="groupingPath" placeholder="/resource/static/img/" th:field="*{imageUrlReplacePath}"/>
+                </div>
+
+                <!-- 에러 메시지 표시 -->
+                <div th:if="${errorMessage}" class="text-red-400 text-sm mb-4 text-left">
+                    <p th:text="${errorMessage}"></p>
+                </div>
+                <button class="btn btn-neutral w-full">전체 Velog 글 다운로드</button>
             </fieldset>
         </form>
     </div>
+</div>
+<script src="//unpkg.com/alpinejs" defer></script>
 </body>
 </html>

@@ -1,15 +1,22 @@
 package com.velogexport.velogexport.service;
 
+import com.velogexport.velogexport.domain.VelogDetail;
 import com.velogexport.velogexport.domain.body.response.PostMD;
 import com.velogexport.velogexport.domain.body.response.post.PostResponseBody;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,5 +78,30 @@ class GraphQLClientServiceImplTest {
             cnt += value.size();
         }
         assertThat(cnt).isEqualTo(476);
+    }
+
+    @Test
+    void zip_test() throws IOException {
+        // given
+        VelogDetail velogDetail = new VelogDetail();
+        velogDetail.setId("gwj0421");
+
+        // when
+        StreamingResponseBody streamingResponseBody = graphQLClientService.downloadAllVelogPost(velogDetail);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        streamingResponseBody.writeTo(outputStream);
+
+        byte[] zipBytes = outputStream.toByteArray();
+
+        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                System.out.println("Found: " + entry.getName());
+            }
+            System.out.println("ZIP 정상!");
+        } catch (IOException e) {
+            System.out.println("손상된 ZIP 파일입니다!");
+        }
+
     }
 }
