@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: velog-export
+
+velog:
+  url-v2: https://v2.velog.io/graphql
+  url-v3: https://v3.velog.io/graphql

@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: velog-export
-
-velog:
-  url-v2: ${VELOG_URL_V2}
-  url-v3: ${VELOG_URL_V3}

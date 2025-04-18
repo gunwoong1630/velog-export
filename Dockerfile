@@ -1,25 +1,30 @@
-# 빌드 스테이지
-FROM gradle:8.7-jdk17 AS build
+# OpenJDK 17 기반 이미지 사용
+FROM openjdk:17-jdk-slim
+
+# 작업 디렉토리 설정
 WORKDIR /app
 
-# Gradle 캐시 최적화를 위해 설정 복사
-COPY build.gradle settings.gradle gradle.properties* /app/
-COPY gradle /app/gradle
+# Gradle 래퍼 파일 복사
+COPY gradlew gradlew.bat settings.gradle ./
+COPY gradle gradle/
 
-ENV SPRING_PROFILES_ACTIVE=prod
+# Gradle 의존성 캐시를 위한 디렉토리 생성
+RUN mkdir -p .gradle && chmod +x gradlew
 
-RUN gradle build || return 0
+# Gradle 빌드 의존성 설치
+RUN ./gradlew --no-daemon dependencies
 
-# 전체 소스 복사 후 빌드
-COPY . /app
-RUN gradle build --no-daemon
+# 소스 코드 복사
+COPY . .
 
-# 실행 스테이지
-FROM eclipse-temurin:17-jdk-alpine
-WORKDIR /app
+# 애플리케이션 빌드
+RUN ./gradlew build --no-daemon
 
-# 빌드 결과 JAR 복사
-COPY --from=build /app/build/libs/*.jar app.jar
+# 실행 파일 위치 설정
+ENV JAR_FILE=build/libs/velog-export-*.jar
 
-# 컨테이너 실행 시 JAR 실행
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+# 애플리케이션 실행
+ENTRYPOINT ["java", "-jar", "/app/${JAR_FILE}"]
+
+# 애플리케이션 포트 열기
+EXPOSE 8080
